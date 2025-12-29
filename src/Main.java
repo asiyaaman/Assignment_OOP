@@ -1,22 +1,36 @@
 public class Main {
-    public static void main(String[] args) {
+        public static void main(String[] args) {
+            Supplier supplier = new Supplier("TechSupply", "info@tech.com");
 
-        Product p1 = new Product(1, "Laptop", 1200);
-        Product p2 = new Product(2, "Monitor", 300);
+            Product laptop = new Product(1, "Laptop", 1200) {
+                @Override
+                public void displayInfo() {
+                    System.out.println(this.toString());
+                }
+            };
+            Product monitor = new Product(2, "Monitor", 300) {
+                @Override
+                public void displayInfo() {
+                    System.out.println(this.toString());
+                }
+            };
 
-        Supplier supplier = new Supplier("TechSupply", "info@tech.com");
+            Inventory inv1 = new Inventory(laptop, supplier, 10);
+            Inventory inv2 = new Inventory(monitor, supplier, 25);
 
-        Inventory inv1 = new Inventory(p1, supplier, 10);
-        Inventory inv2 = new Inventory(p2, supplier, 25);
+            Warehouse warehouse = new Warehouse();
+            warehouse.addInventory(inv1);
+            warehouse.addInventory(inv2);
 
-        inv1.displayInventory();
-        System.out.println();
-        inv2.displayInventory();
+            System.out.println("=== Full Inventory ===");
+            warehouse.displayAll();
 
-        if (inv1.getQuantity() > inv2.getQuantity()) {
-            System.out.println("\nLaptop has more stock.");
-        } else {
-            System.out.println("\nMonitor has more stock.");
+            System.out.println("\n=== Search for Laptop ===");
+            Inventory found = warehouse.searchByProductName("Laptop");
+            if (found != null) found.displayInventory();
+
+            System.out.println("\n=== Sort by Price Descending ===");
+            warehouse.sortByPrice(false);
+            warehouse.displayAll();
         }
     }
-}

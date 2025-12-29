@@ -30,4 +30,11 @@ public class Inventory {
             supplier.displayInfo();
             System.out.println("Quantity: " + quantity);
         }
+    @Override
+    public String toString() {
+        return product +
+                ", Supplier: " + supplier.getCompanyName() +
+                ", Quantity: " + quantity;
     }
+
+}
