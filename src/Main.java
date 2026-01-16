@@ -1,36 +1,68 @@
+import java.sql.*;
+
 public class Main {
-        public static void main(String[] args) {
-            Supplier supplier = new Supplier("TechSupply", "info@tech.com");
+    public static void main(String[] args) {
 
-            Product laptop = new Product(1, "Laptop", 1200) {
-                @Override
-                public void displayInfo() {
-                    System.out.println(this.toString());
-                }
-            };
-            Product monitor = new Product(2, "Monitor", 300) {
-                @Override
-                public void displayInfo() {
-                    System.out.println(this.toString());
-                }
-            };
+        String url = "jdbc:postgresql://localhost:5432/warehouseinv_db";
+        String user = "postgres";
+        String password = "251098";
 
-            Inventory inv1 = new Inventory(laptop, supplier, 10);
-            Inventory inv2 = new Inventory(monitor, supplier, 25);
+        try (Connection con = DriverManager.getConnection(url, user, password)) {
 
-            Warehouse warehouse = new Warehouse();
-            warehouse.addInventory(inv1);
-            warehouse.addInventory(inv2);
+            // CREATE (INSERT) + get generated id
+            int newId;
+            try (PreparedStatement psInsert = con.prepareStatement(
+                    "INSERT INTO product(name, price) VALUES (?, ?) RETURNING id"
+            )) {
+                psInsert.setString(1, "Laptop");
+                psInsert.setDouble(2, 1200);
+                ResultSet r = psInsert.executeQuery();
+                r.next();
+                newId = r.getInt("id");
+            }
 
-            System.out.println("=== Full Inventory ===");
-            warehouse.displayAll();
+            // READ
+            System.out.println("After INSERT:");
+            printAll(con);
 
-            System.out.println("\n=== Search for Laptop ===");
-            Inventory found = warehouse.searchByProductName("Laptop");
-            if (found != null) found.displayInventory();
+            // UPDATE
+            try (PreparedStatement psUpdate = con.prepareStatement(
+                    "UPDATE product SET price = ? WHERE id = ?"
+            )) {
+                psUpdate.setDouble(1, 1300);
+                psUpdate.setInt(2, newId);
+                psUpdate.executeUpdate();
+            }
 
-            System.out.println("\n=== Sort by Price Descending ===");
-            warehouse.sortByPrice(false);
-            warehouse.displayAll();
+            System.out.println("After UPDATE (id=" + newId + "):");
+            printAll(con);
+
+            // DELETE
+            try (PreparedStatement psDelete = con.prepareStatement(
+                    "DELETE FROM product WHERE id = ?"
+            )) {
+                psDelete.setInt(1, newId);
+                psDelete.executeUpdate();
+            }
+
+            System.out.println("After DELETE (id=" + newId + "):");
+            printAll(con);
+
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
+
+    private static void printAll(Connection con) throws SQLException {
+        try (Statement st = con.createStatement();
+             ResultSet rs = st.executeQuery("SELECT * FROM product ORDER BY id")) {
+            while (rs.next()) {
+                System.out.println(
+                        rs.getInt("id") + " | " +
+                                rs.getString("name") + " | " +
+                                rs.getDouble("price")
+                );
+            }
+        }
+    }
+}
