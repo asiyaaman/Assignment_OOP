@@ -1,0 +1,19 @@
+### Get all products
+GET http://127.0.0.1:8080/api/products
+
+### Add new product
+POST http://127.0.0.1:8080/api/products
+Content-Type: application/json
+
+{
+  "name": "Laptop",
+  "price": 1500
+}
+### Update price of product id=1
+PUT http://127.0.0.1:8080/api/products/1/price
+Content-Type: application/json
+
+{
+ "price": 999
+}
+
